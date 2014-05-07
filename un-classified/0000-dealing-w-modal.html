@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>0000-dealing-w-modal.html</title>
+    <link href="http://localhost:8001/bootstrap/v-3.1.1/css/bootstrap.css" rel="stylesheet">
+    <link href="http://localhost:8001/bootstrap/v-3.1.1/css/bootstrap-theme.css" rel="stylesheet">
+    <style type="text/css">.high-light { color:red; }</style>
+</head>
+<body>
+
+
+<script id="modal-view-template" type="text/html">
+  <div class="modal-header">
+    <h2>This is a modal!</h2>
+  </div>
+  <div class="modal-body">
+    <p>With some content in it!</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn">cancel</button>
+    <button class="btn-default">Ok</button>
+  </div>
+</script>
+ 
+<div id="modal"></div>
+
+
+
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>	
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.syphon-0.4.1.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.localStorage-1.1.7.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+<script src="http://localhost:8001/js/lib/spin.js"></script>
+<script src="http://localhost:8001/js/lib/spin.jquery.js"></script>
+
+<script src="http://localhost:8001/bootstrap/v-3.1.1/js/bootstrap.js"></script>
+
+<script type="text/javascript">	
+     
+	  // http://lostechies.com/derickbailey/2012/04/17/managing-a-modal-dialog-with-backbone-and-marionette/ 
+	  var View = Backbone.View.extend({
+	  render: function() {
+	  	var html = _.template($('#modal-view-template').html())({});
+	  	this.$el.html(html) 
+	  } });
+	  var view = new View({a:"a"});
+      view.render();
+	  
+	  var $modalEl = $("#modal");
+	  $modalEl.html(view.el);
+	  $modalEl.modal();
+
+	    
+      
+	// Other supporting function
+	function generateModelAtrr () {
+		var models = [/* { a:'0a', b:'0b', ... },
+		 				 { a:'1a', b:'1b', ... },
+		 					...                    */
+					 ];
+		for (var i = 1; i < 6; i++) {
+			var model = {/* { a:i+'a', b:i+'b', ... } */};
+			model['id'] = i.toString();   // add custom id 
+			_.each(['a', 'b', 'c', 'd'], function(elem) { model[elem] = i.toString() + elem; });
+			models.push(model);
+		}; //end for
+		return models;
+	}
+
+	
+	
+</script>
+
+	</body>
+</html>

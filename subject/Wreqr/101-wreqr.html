@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>402-request-entity</title>
+	</head>
+
+	<body>
+
+		<div id="main-region"></div>
+
+		<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+		<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+		<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+
+		<script type="text/javascript">
+			var app = new Marionette.Application();
+			
+			app.module("MyModule", function( MyModule, app, BB, Marionette, $, _, opts) {
+				
+				var API = {
+					  doSomething: function() { console.log('done something');}	
+					, returnSomething: function() { return {a:'a', b:'b'} }	
+				};
+
+				// handlers that respond to request				
+			    app.reqres.setHandler('EventDoSomething', function(){ API.doSomething() });
+			    app.reqres.setHandler('EventReturnSomething', function(){ return API.returnSomething(); });
+	
+			} , null );
+			
+			// Request 
+			app.request('EventDoSomething');
+			console.log(app.request('EventReturnSomething'));
+			
+			// removing handlers
+			app.reqres.removeHandler('EventDoSomething');
+			try {
+				app.request('EventDoSomething'); 
+			} catch (e) {
+				console.log(e.message) // Uncaught Error: Handler not found for 'EventDoSomething'  
+			}
+
+
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,127 @@
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>612-delete-a-model-via-subscribe.html</title>
+		<style type="text/css">
+			.high-light { color:red; }
+		</style>
+	</head>
+	
+	<body>
+
+<div id="main-region"></div>
+<script type="text/template" id="template-items">
+  <thead>
+    <tr><th>AA</th><th>BB</th><th>CC</th><th>DD</th><th></th><th></th></tr>
+  </thead>
+  <tbody></tbody>
+</script>
+
+<script type="text/template" id="template-item">
+  <td><%= a %></td><td><%= b %></td><td><%= c %></td><td><%= d %></td>
+  <td><button class="js-delete">Delete</button></td>
+  <td><button class="js-function1">1</button></td>
+</script>
+
+		<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+		<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+		<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+
+<script type="text/javascript">	
+	var app = new Marionette.Application();
+	app.addRegions({r1: "#main-region"});
+	
+	// Entities module (where model and collection are prepared)
+	app.module("Entities", function(Entities, app, BB, Marionette, $, _, opts) {
+		
+		Entities.Item = BB.Model.extend();
+		Entities.Items = BB.Collection.extend({ model : Entities.Item });
+		var items = null;
+						 
+		var InitializeItems = function() {
+			items =  new Entities.Items (opts.models_attr);  // spawn collection
+		};
+		
+		var API = {
+			getEntities: function() {
+				if ( items == null ) InitializeItems();
+				return items;
+			}	
+		};
+
+		// handler to respond to request				
+	    app.reqres.setHandler('entities', function(){
+	    	return API.getEntities();
+	    });
+
+	} , {models_attr: generateModelAtrr()} );
+	
+	// View module (View part)
+	app.module("View", function(View, app, BB, Marionette, $, _) {	
+		View.Item  = Marionette.ItemView.extend({
+						  tagName: "tr"
+						, template: "#template-item"
+						, events: {   "click": 'highLight'
+									, "click button.js-delete": 'deleteClicked'
+									, "click button.js-function1": 'button1Click'
+								  }
+						, highLight: function() {this.$el.toggleClass('high-light');	}
+						, deleteClicked: function(e) { 
+								e.stopPropagation();
+							    this.trigger("item:delete", this.model);
+							}
+						, button1Click: function(e) { 
+					    		e.stopPropagation();    
+						}
+		});
+		View.Items = Marionette.CompositeView.extend({
+						  tagName: "table"
+						, template: "#template-items"
+						, itemView: View.Item
+						, itemViewcontainer: "tbody" });       		
+	});
+	
+	// View module (Controller part)
+	app.module("View", function(View, app, BB, Marionette, $, _) {			
+		View.Controller = {
+			showItems : function() {
+				var myVar = 'myVar';
+				var items = app.request('entities'); //  request entities
+				var viewItems = new View.Items({ collection: items } );  // spawn view for collection
+				
+	      		var deleteItem = function(itemView, model) {
+ 				    this.collection.remove(model);
+	      		};
+			    viewItems.on("itemview:item:delete", deleteItem );
+	      		
+				app.r1.show(viewItems);	
+			}// end showItems
+		};
+	});
+
+	
+	// Entry point (by calling method in controller)
+	app.View.Controller.showItems();
+	
+	
+	// Other supporting function
+	function generateModelAtrr () {
+		var models = [/* { a:'0a', b:'0b', ... },
+		 				 { a:'1a', b:'1b', ... },
+		 					...                    */
+					 ];
+		for (var i = 0; i < 10; i++) {
+			var model = {/* { a:i+'a', b:i+'b', ... } */};
+			_.each(['a', 'b', 'c', 'd'], function(elem) { model[elem] = i.toString() + elem; });
+			models.push(model);
+		}; //end for
+		return models;
+	}
+
+</script>
+
+	</body>
+</html>

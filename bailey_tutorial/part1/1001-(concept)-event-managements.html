@@ -1,0 +1,241 @@
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>1001-(concept)-event-managements.html</title>
+		<style type="text/css">
+			.high-light { color:red; }
+		</style>
+	</head>
+	
+	<body>
+
+<div id="main-region"></div>
+
+<script type="text/template" id="template-items">
+  <thead>
+    <tr><th>AA</th><th>BB</th><th>CC</th><th>DD</th><th></th><th></th></tr>
+  </thead>
+  <tbody></tbody>
+</script>
+
+<script type="text/template" id="template-item">
+  <td><%= a %></td>
+  <td><%= b %></td>
+  <td><button class="js-delete">Delete</button></td>
+  <td><div><a class="js-show" href="#items/<%= id %>">Show</a></div></td>
+</script>
+
+<script type="text/template" id="template-detailView">
+	<h1><%= a %> <%= c %></h1>
+	<p><strong>b:</strong> <%= b %></p>
+	<a class="js-items" href="#items">back to items</a>
+</script>
+
+<script type="text/template" id="template-detailView-missing-item">
+	 <div>This contact doesn't exist !</div>
+</script>
+
+		<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+		<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+		<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+
+<script type="text/javascript">	
+	var app = new Marionette.Application();
+	app.addRegions({r1: "#main-region"});
+		
+	// Entities module (where model and collection are prepared)
+	app.module("Entities", function(Entities, app, BB, Marionette, $, _, opts) {
+		
+		Entities.Item = BB.Model.extend();
+		Entities.Items = BB.Collection.extend({ model : Entities.Item });
+		var items = null;
+						 
+		var InitializeItems = function() {
+			items =  new Entities.Items (opts.models_attr);  // spawn collection
+		};
+		
+		var API = {
+			getEntities: function() {
+				if ( items == null ) InitializeItems();
+				return items;
+			}	
+		};
+
+		// handler to respond to request				
+	    app.reqres.setHandler('entities', function(){
+	    	return API.getEntities();
+	    });
+
+	} , {models_attr: generateModelAtrr()} );
+
+
+	// Collection View module (View part)
+	app.module("CollView", function(CollView, app, BB, Marionette, $, _) {	
+		CollView.Item  = Marionette.ItemView.extend({
+						  tagName: "tr"
+						, template: "#template-item"
+						, events: {   "click": 'highLight'
+									, "click button.js-delete": 'deleteClicked'
+									, "click a.js-show": 'showClicked'
+								  }
+						, highLight: function() {this.$el.toggleClass('high-light');	}
+						, deleteClicked: function(e) { 
+								e.stopPropagation();
+							    this.trigger("item:delete", this.model);
+							}
+						, showClicked: function(e) { 
+							    e.preventDefault();
+					    		e.stopPropagation();
+					    		this.trigger("item:show", this.model);
+					    	} 
+					    , remove: function(){
+					    	   var that = this;
+					    	   this.$el.fadeOut(function(){
+					    	   		Marionette.ItemView.prototype.remove.call(that);
+					    	   });
+					    	}
+   
+		});
+		CollView.Items = Marionette.CompositeView.extend({
+						  tagName: "table"
+						, template: "#template-items"
+						, itemView: CollView.Item
+						, itemViewcontainer: "tbody" });       		
+	});
+	// Collection View module (Controller part)
+	app.module("CollView", function(CollView, app, BB, Marionette, $, _) {			
+		CollView.Controller = {
+			display : function() {
+				var items = app.request('entities'); //  request entities
+				var viewItems = new CollView.Items({ collection: items } );  // spawn view for collection
+				
+	      		var deleteItem = function(itemView, model) {
+ 				    this.collection.remove(model); 
+	      		};
+	      		var showItem = function(itemView, model) {
+	      			app.trigger('AppControl:content:itemById', model.get('id') );
+	      		};
+			    viewItems.on("itemview:item:delete", deleteItem );
+			    viewItems.on("itemview:item:show", showItem );
+	      		
+				app.r1.show(viewItems);
+				
+				// mount collection on app for debug	
+				window.app.items=items;
+				window.app.viewItems = viewItems;
+			}// end showItems
+		};
+	});
+
+
+	// ViewDetail (View) 
+	app.module("Details", function( Details, app, BB, Marionette, $, _) {
+		Details.View = Marionette.ItemView.extend({
+			template: "#template-detailView"
+			, events: {
+				"click a.js-items": 'backToItemsClick'
+			}
+			, backToItemsClick : function(e) {
+					e.preventDefault();
+					app.trigger('AppControl:content:items');
+			}
+			
+		});
+		Details.ViewMissing = Marionette.ItemView.extend({
+			template: "#template-detailView-missing-item"
+		});
+	});
+	// ViewDetail (controller)
+	app.module("Details", function( Details, app, BB, Marionette, $, _) {
+		Details.Controller = {
+			display: function(id) {
+				var _items = app.request('entities');
+				var _item = _items.get(id);
+				var detailView = null;
+				if ( _item !== undefined ) {
+					detailView = new Details.View({ model:_item });
+				} else {
+					detailView = new Details.ViewMissing();	
+				} 	
+				app.r1.show(detailView);
+			}
+		}; // end Controller
+		
+	});
+	
+	
+	// Application Controller (the Event dispacher )
+	app.module("AppControl", function(AppControl, app, BB, Marionette, $, _ ){
+		this.Router = Marionette.AppRouter.extend({
+			appRoutes: {
+				  "items" : 'itemsCallback'
+				, 'items/:id' : 'itemsDetailCallback' 
+			}
+		});
+		
+		// Router callback
+		var _API = {
+			// the following callback ask View to to things:
+			  itemsCallback:       function()   {app.CollView.Controller.display();}
+			, itemsDetailCallback: function(id) {app.Details.Controller.display(id);}   
+		};
+		
+		app.addInitializer(function(){  /* exec [2] */
+			new AppControl.Router({controller: _API	});
+		});
+
+		app.on("initialize:after", function(){ /* exec [3] */
+			if(Backbone.history){ 
+				Backbone.history.start(); 
+				if(this.getCurrentRoute() === ""){	app.trigger('AppControl:content:items');			}
+			};
+		});
+		
+		//subscribe to app.trigger('AppControl:content:items');
+		// responsible: display collection
+		app.on("AppControl:content:items", function(){ 
+			app.navigate('items');
+			_API.itemsCallback();  // evoke router call back
+		});
+		
+		// subscribe to app.trigger('AppControl:content:itemById');
+		// responsible: display item by id
+		app.on("AppControl:content:itemById", function(id){ 
+			app.navigate('items/'+ id);
+			_API.itemsDetailCallback(id);  // evoke router callback
+		});			
+	});
+		
+	//helper
+	_.extend(app, {
+		navigate: function(route, opts) { opts || (opts={}); Backbone.history.navigate(route, opts); }
+		, getCurrentRoute : function(){ return Backbone.history.fragment; }
+	});
+	
+	// Other supporting function
+	function generateModelAtrr () {
+		var models = [/* { a:'0a', b:'0b', ... },
+		 				 { a:'1a', b:'1b', ... },
+		 					...                    */
+					 ];
+		for (var i = 1; i < 11; i++) {
+			var model = {/* { a:i+'a', b:i+'b', ... } */};
+			model['id'] = i.toString();   // add custom id 
+			_.each(['a', 'b', 'c', 'd'], function(elem) { model[elem] = i.toString() + elem; });
+			models.push(model);
+		}; //end for
+		return models;
+	}
+
+
+	// Entry point
+	app.start(); /* exec [1] */
+	
+	
+</script>
+
+	</body>
+</html>

@@ -1,0 +1,497 @@
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>1050-validating-data.html</title>
+		<style type="text/css">
+			.high-light { color:red; }
+		</style>
+	</head>
+	
+	<body>
+
+<div id="main-region"></div>
+
+<script type="text/template" id="template-items">
+  <thead>
+    <tr><th>AA</th><th>BB</th><th>CC</th><th>DD</th><th></th><th></th></tr>
+  </thead>
+  <tbody></tbody>
+</script>
+
+<script type="text/template" id="template-item">
+  <td><%= a %></td>
+  <td><%= b %></td>
+  <td><button class="js-delete">Delete</button></td>
+  <td><div><a class="js-show" href="#items/<%= id %>">Show</a></div></td>
+</script>
+
+<script type="text/template" id="template-detailView">
+	<h1><%= a %> <%= b %></h1>
+	<p><strong>c:</strong> <%= c %></p>
+	<a class="js-items" href="#items">back to items</a>
+</script>
+
+<script type="text/template" id="template-detailView-missing-item">
+	 <div>This contact doesn't exist !</div>
+</script>
+
+<script type="text/template" id="template-loading-view">
+  <p><%= title %></p>
+  <p><%= message %></p>
+  <div id="spinner"></div>
+</script>
+
+<script type="text/template" id="template-item-edit">
+      <h3>Edit <%= a %> <%= b %></h1>
+      <form>
+        <div>
+          <label for="item-a" >a:</label>
+          <input id="item-a" name="a" type="text" value="<%= a %>"/>
+        </div>
+        <div>
+          <label for="item-b" >b:</label>
+          <input id="item-b" name="b" type="text" value="<%= b %>"/>
+        </div>
+        <div>
+          <label for="item-c" >c:</label>
+          <input id="item-c" name="c" type="text" value="<%= c %>"/>
+        </div>
+        <button class="btn js-submit">Save</button>
+      </form>
+</script>
+    
+    
+		<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+		<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+		<!-- <script src="../underscore-1.4.4.js"></script> -->
+		<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>	
+		<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone.syphon-0.4.1.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone.localStorage-1.1.7.js"></script>
+		<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+		<script src="http://localhost:8001/js/lib/spin.js"></script>
+		<script src="http://localhost:8001/js/lib/spin.jquery.js"></script>
+
+<script type="text/javascript">	
+	var app = new Marionette.Application();
+	app.addRegions({r1: "#main-region"});
+	
+	app.persisted = true;
+	app.useLocalStorage = true;
+	
+	
+	// Entities module (local storage configuration)
+	app.module("Entities", function(Entities, app, BB, Marionette, $, _, opts) {
+		  var findStorageKey = function(entityPrototype){
+		    // use a model's urlRoot value
+		    if(entityPrototype.urlRoot){
+		      return _.result(entityPrototype, "urlRoot");
+		    }
+		    // use a collection's url value
+		    if(entityPrototype.url){
+		      return _.result(entityPrototype, "url");
+		    }
+		    // fallback to obtaining a model's storage key from
+		    // the collection it belongs to
+		    if(entityPrototype.collection && entityPrototype.collection.url){
+		      return _.result(entityPrototype.collection, "url");
+		    }	
+		    throw new Error("Unable to determine storage key");
+		  };
+		
+		  var StorageMixin = function(entityPrototype){
+		    var storageKey = findStorageKey(entityPrototype);
+		    return { localStorage: new Backbone.LocalStorage(storageKey) };
+		  };
+		
+		  Entities.configureStorage = function(entity){
+		    _.extend(entity.prototype, new StorageMixin(entity.prototype));
+		  };
+
+	} , {} );
+		
+	// Entities module (where model and collection are prepared)
+	app.module("Entities", function(Entities, app, BB, Marionette, $, _, opts) {
+		
+		Entities.Item = BB.Model.extend({ 
+			urlRoot: "items"
+			, validate: function(attrs, options) {
+				      console.log('validating....., ', attrs);
+					  var errors = {}
+					  if (!attrs.a) {
+					    errors.a = "can't be blank";
+					  }
+					  if (!attrs.b) {
+					    errors.b = "can't be blank";
+					  }
+					  if (!attrs.c) {
+					    errors.c = "can't be blank";
+					  }
+					  if( !_.isEmpty(errors)){
+					    return errors;
+					  }
+				}// end validate;
+			
+			
+			 });
+		Entities.Items = BB.Collection.extend({
+			url: function() {return 'items';} 
+			, model : Entities.Item });
+		
+		if (app.useLocalStorage) {
+		  Entities.configureStorage(Entities.Item);  
+		  Entities.configureStorage(Entities.Items);
+		}
+			
+		var API = {
+			getEntities: function() {
+				var items = new Entities.Items;	
+				console.log('[1] before fetch entities, collection length:',  items.length);
+				var defer = $.Deferred();
+				setTimeout(function(){	// simulate network latency
+					items.fetch({ 
+						success: function(items){
+							console.log('[2] data returned, collection length:',  items.length);
+							defer.resolve(items);
+							}
+					}); // end items.fetch
+				}, 2000); // end set timeout
+				var promise = defer.promise();
+				$.when(promise).done(function(items){			
+					console.log('[3] promised returned, collection length:',  items.length);				
+					if ( !items.length) {
+						console.log('[3a] collection is empty, populate them' );
+						items.add(opts.models_attr);
+						items.forEach(function(item){ item.save(); });
+						console.log('[3b] populated, collection length:',  items.length);
+						};
+				});// end done
+				return promise;
+			}// end getEntities
+			, getEntity: function(itemId) {
+				console.log('[a] fetch entity: id is:', itemId);
+				var item = new Entities.Item({id: itemId});
+				var defer = $.Deferred();
+				setTimeout(function(){  // simulate network latency
+					item.fetch({
+						success: function(item){
+							console.log('[b] entity data return, here is the item: ', item);
+							defer.resolve(item); 
+						}
+						, error: function(item) {
+							defer.resolve(undefined);
+						}
+					});// end fetch
+				}, 2000 ); // end set timeout
+				var promise = defer.promise();
+				return promise;
+			} //end getEntity	
+		};
+
+		// handler to respond to request				
+	    app.reqres.setHandler('entities', function(){ return API.getEntities();});
+	    app.reqres.setHandler('entity', function(id){ return API.getEntity(id);});
+
+		// debug
+		window.A_EntitiesAPI = API;						 
+		
+	} , {models_attr: generateModelAtrr()} );
+	
+	// CommonView (View)
+	app.module("CommonView", function( CommonView, app, BB, Marionette, $, _, opts) {
+	  CommonView.Spinner = Marionette.ItemView.extend({
+	    template: "#template-loading-view"
+	    , initialize: function(options){
+		      var options = options || {};
+		      this.title = options.title || "Loading Data";
+		      this.message = options.message || "fetching data.....";
+	    }
+	    , serializeData: function(){ 
+	    	/***  Marionette calls the serializeData 
+	    	 *    function to provide data to the template ***/
+	      	return { title: this.title, message: this.message }
+	    }
+	    , onShow: function(){
+		      var spinOpts = {
+		        lines: 13, // The number of lines to draw
+		        length: 20, // The length of each line
+		        width: 10, // The line thickness
+		        radius: 30, // The radius of the inner circle
+		        corners: 1, // Corner roundness (0..1)
+		        rotate: 0, // The rotation offset
+		        direction: 1, // 1: clockwise, -1: counterclockwise
+		        color: "#000", // #rgb or #rrggbb
+		        speed: 1, // Rounds per second
+		        trail: 60, // Afterglow percentage
+		        shadow: false, // Whether to render a shadow
+		        hwaccel: false, // Whether to use hardware acceleration
+		        className: "spinner", // The CSS class to assign to the spinner
+		        zIndex: 2e9, // The z-index (defaults to 2000000000)
+		        top: "30px", // Top position relative to parent in px
+		        left: "auto" // Left position relative to parent in px
+		      };
+		      $("#spinner").spin(spinOpts);
+	    } // end onShow
+	  } );
+	}, {} );
+	
+	
+	// Collection View module (View part)
+	app.module("CollView", function(CollView, app, BB, Marionette, $, _) {	
+		CollView.Item  = Marionette.ItemView.extend({
+						  tagName: "tr"
+						, template: "#template-item"
+						, events: {   "click": 'highLight'
+									, "click button.js-delete": 'deleteClicked'
+									, "click a.js-show": 'showClicked'
+								  }
+						, highLight: function() {this.$el.toggleClass('high-light');	}
+						, deleteClicked: function(e) { 
+								e.stopPropagation();
+							    this.trigger("item:delete", this.model);
+							}
+						, showClicked: function(e) { 
+							    e.preventDefault();
+					    		e.stopPropagation();
+					    		this.trigger("item:show", this.model);
+					    	} 
+					    , remove: function(){
+					    	   var that = this;
+					    	   this.$el.fadeOut(function(){
+					    	   		Marionette.ItemView.prototype.remove.call(that);
+					    	   });
+					    	}
+		});
+		CollView.Items = Marionette.CompositeView.extend({
+						  tagName: "table"
+						, template: "#template-items"
+						, itemView: CollView.Item
+						, itemViewcontainer: "tbody" });       		
+	});
+	// Collection View module (Controller part)
+	app.module("CollView", function(CollView, app, BB, Marionette, $, _) {			
+		CollView.Controller = {
+			display : function() {
+				
+				// ** spawn a spnner **
+				var spinnerView = new app.CommonView.Spinner({
+			        title: "Simulating data latency",
+			        message: "loading collection...."
+			      });
+				app.r1.show(spinnerView);
+				
+				
+				var promise_items = app.request('entities'); //  request entities
+				var viewItems = new CollView.Items;  // spawn view for collection
+				$.when(promise_items).done(function(data){
+					    console.log('[4] promised passed to collection view control, here is the collection:', data);
+						viewItems.collection = data;  // spawn view for collection
+						app.r1.show(viewItems);
+				}); // end deffer object chain
+				
+	      		var deleteItem = function(itemView, model) {
+	      			if (app.persisted) {
+	      				model.destroy();	
+	      			} else {
+ 				    	this.collection.remove(model);
+ 				    } 
+	      		};
+	      		var showItem = function(itemView, model) {
+	      			app.trigger('AppControl:content:itemById', model.get('id') );
+	      		};
+			    viewItems.on("itemview:item:delete", deleteItem );
+			    viewItems.on("itemview:item:show", showItem );
+			    			
+				// Debug	
+				window.A_viewItems = viewItems;
+			}// end showItems
+		};
+	});
+
+
+	// ViewDetail (View) 
+	app.module("Details", function( Details, app, BB, Marionette, $, _) {
+		Details.View = Marionette.ItemView.extend({
+			template: "#template-detailView"
+			, events: {
+				"click a.js-items": 'backToItemsClick'
+			}
+			, backToItemsClick : function(e) {
+					e.preventDefault();
+					app.trigger('AppControl:content:items');
+			}
+			
+		});
+		Details.ViewMissing = Marionette.ItemView.extend({
+			template: "#template-detailView-missing-item"
+		});
+	});
+	// ViewDetail (controller)
+	app.module("Details", function( Details, app, BB, Marionette, $, _) {
+		Details.Controller = {
+			display: function(id) {
+				// ** spawn a spnner **
+				var spinnerView = new app.CommonView.Spinner({
+			        title: "Simulating data latency",
+			        message: "loading item...."
+			      });
+				app.r1.show(spinnerView);
+				
+				var promise_item = app.request('entity', id);
+				$.when(promise_item).done(function(item){
+					console.log('[c] promised passed to item view contorl, here is the item:', item);
+					var detailView = null;
+					if ( item !== undefined ) {
+						detailView = new Details.View({ model:item });
+					} else {
+						detailView = new Details.ViewMissing();	
+					} 	
+					app.r1.show(detailView);
+				}); // end of deffer object chain
+			}
+		}; // end Controller	
+	});
+	
+	
+	
+	// EditItem (View)	
+	app.module("EditItem", function(EditItem, MyApp, Backbone, Marionette, $, _, Opts ) {
+		EditItem.View = Marionette.ItemView.extend({
+			template: '#template-item-edit'
+			, events : {
+				"click button.js-submit" : "submitClicked"
+			}
+			, submitClicked : function(e) {
+				e.preventDefault();
+				console.log("edit contact submit click");
+				var data = Backbone.Syphon.serialize(this);
+				console.log("data return from syphon:, ", data);
+				var data_processed = {};
+				_.each(data, function(element, key){ data_processed[key] = element[0];	});
+				console.log("processed data that return from syphon:, ", data_processed);
+				//debugger;
+				this.trigger("form:submit", data_processed);
+			}
+		});
+		EditItem.ViewMissing = Marionette.ItemView.extend({
+			template: "#template-detailView-missing-item"
+		});
+	  }, {});
+	// EditItem (controller)      
+	app.module("EditItem", function(EditItem, MyApp, Backbone, Marionette, $, _, Opts ) {
+	  	EditItem.Controller = {
+	  		display: function(id) {
+	  			// ** spawn a spnner **
+				var spinnerView = new app.CommonView.Spinner({
+			        title: "Simulating data latency",
+			        message: "loading item...."
+			      });
+				app.r1.show(spinnerView);
+				
+				var promise_item = app.request('entity', id);
+				$.when(promise_item).done(function(item){
+					console.log('[c] promised passed to item view contorl, here is the item:', item);
+					var editItemView = null;
+					if ( item !== undefined ) {
+						editItemView = new EditItem.View({ model:item });
+						editItemView.on('form:submit', function(data){
+							if( item.save(data)) {
+								console.log('save success, item is: ', item);
+								app.trigger('AppControl:content:itemById', item.get('id'));
+							} else {
+								console.log('save fail');
+							}
+						});
+						
+						
+						
+					} else {
+						editItemView = new EditItem.ViewMissing();	
+					} 	
+					app.r1.show(editItemView);
+				}); // end of deffer object chain
+	  		}
+	  	}
+	  }, {});
+	
+
+	// Application Controller (the Event dispacher )
+	app.module("AppControl", function(AppControl, app, BB, Marionette, $, _ ){
+		this.Router = Marionette.AppRouter.extend({
+			appRoutes: {
+				  "items" : 'itemsCallback'
+				, 'items/:id' : 'itemsDetailCallback'
+				, 'items/:id/edit': 'itemEdit' 
+			}
+		});
+		
+		// Router callback
+		var _API = {
+			// the following callback ask View to to things:
+			  itemsCallback:       function()   {app.CollView.Controller.display();}
+			, itemsDetailCallback: function(id) {app.Details.Controller.display(id);}
+			, itemEdit:            function(id) {app.EditItem.Controller.display(id);}  
+		};
+		
+		app.addInitializer(function(){  /* exec [2] */
+			new AppControl.Router({controller: _API	});
+		});
+
+		app.on("initialize:after", function(){ /* exec [3] */
+			if(Backbone.history){ 
+				Backbone.history.start(); 
+				if(this.getCurrentRoute() === ""){	app.trigger('AppControl:content:items');			}
+			};
+		});
+		
+		//subscribe to app.trigger('AppControl:content:items');
+		// responsible: display collection
+		app.on("AppControl:content:items", function(){ 
+			app.navigate('items');
+			_API.itemsCallback();  // evoke router call back
+		});
+		
+		// subscribe to app.trigger('AppControl:content:itemById');
+		// responsible: display item by id
+		app.on("AppControl:content:itemById", function(id){ 
+			app.navigate('items/'+ id);
+			_API.itemsDetailCallback(id);  // evoke router callback
+		});
+		
+		app.on("AppControl:content:itemEdit", function(id){ 
+			app.navigate('items/'+ id + "/edit");
+			_API.itemEdit(id);
+		});			
+	});
+		
+	//helper
+	_.extend(app, {
+		navigate: function(route, opts) { opts || (opts={}); Backbone.history.navigate(route, opts); }
+		, getCurrentRoute : function(){ return Backbone.history.fragment; }
+	});
+	
+	// Other supporting function
+	function generateModelAtrr () {
+		var models = [/* { a:'0a', b:'0b', ... },
+		 				 { a:'1a', b:'1b', ... },
+		 					...                    */
+					 ];
+		for (var i = 1; i < 6; i++) {
+			var model = {/* { a:i+'a', b:i+'b', ... } */};
+			model['id'] = i.toString();   // add custom id 
+			_.each(['a', 'b', 'c', 'd'], function(elem) { model[elem] = i.toString() + elem; });
+			models.push(model);
+		}; //end for
+		return models;
+	}
+
+
+	// Entry point
+	app.start(); /* exec [1] */
+	
+	
+</script>
+
+	</body>
+</html>

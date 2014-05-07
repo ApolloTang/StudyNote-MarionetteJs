@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+	<div id="main-region"></div>
+<script type="text/template" id="template-item"><p><%= a %> <%= b %> <%= c %> <%= d %></p></script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+      var app = new Marionette.Application();
+      app.addRegions({r1: "#main-region"});
+      
+	  var models_attr = [ /* { a:'0a', b:'0b', ... },
+			                 { a:'1a', b:'1b', ... },						
+                             ....
+	                     */ ];
+	  for ( var i=0; i<10; i++ ) {
+	  	model_attr = {/* { a:i+'a', b:i+'b', ... } */};
+	  	_.each(['a', 'b', 'c', 'd'], function(elem){ model_attr[elem] = i.toString() + elem; } );
+	  	
+	  	// add an attribute call 'order' with random integer 
+	  	model_attr['order'] = Math.floor(Math.random() * (50 + 1)); // random integer btw 50 and 0
+	  	models_attr.push( model_attr );
+	  }
+	  
+      
+      app.Items = Backbone.Collection.extend( {comparator: 'order' });   // NOTE pass in comparator
+      
+      app.ViewItem  = Marionette.ItemView.extend({tagName: "li", template: "#template-item"});
+      app.ViewItems = Marionette.CollectionView.extend( {tagName: "ul", itemView:app.ViewItem });
+      
+      app.items = new app.Items(models_attr);  
+      
+      // the order attribute is now sorted in order 
+      console.log( _.pluck(_.pluck(app.items.models, 'attributes'), 'order') );  // [2, 4, 6, 8, 11, 29, 32, 34, 36, 50]
+      
+      
+      
+      app.viewItems = new app.ViewItems({ collection: app.items} );
+
+      app.r1.show(app.viewItems);
+
+</script>
+
+</body>
+</html>

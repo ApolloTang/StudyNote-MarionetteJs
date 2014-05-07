@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+	<div id="main-region"></div>
+    <script type="text/template" id="template1"><p><%= a %> <%= b %></p></script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+      var app = new Marionette.Application(); 
+      var elem1 = {
+		id: "myID2",
+		tagName: "header",
+		template: "#template1" 
+      }
+	  var attr1 = { a:'a', b:'b'};
+	  
+      app.addRegions({r1: "#main-region"});
+      app.Model = Backbone.Model.extend();
+      app.View = Marionette.ItemView.extend(elem1);
+      app.m1 = new app.Model(attr1);
+      app.v1 = new app.View({model:app.m1});
+
+      app.r1.show(app.v1);
+      console.log(app.v1.el); // <span id=​"myID"><p>​Hello World​</p></span>
+</script>
+
+</body>
+</html>

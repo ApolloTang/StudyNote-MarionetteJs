@@ -1,0 +1,89 @@
+<div id="order-summary">Order Summary Goes here</div>
+<div id="categories-content">
+
+<!-- #template-menu-core ( template for CategoryCollectionView View ) --> 
+
+     <ul   class="nav nav-tabs" id="categories-tabs">
+     
+          <li><a href="#category-1">Appetizers</a></li>
+     
+     </ul>
+     
+
+    <!-- ItemViewContainer  for CategoryCollectionView  ( CategoryView nested inside ) -->
+     <div class="tab-content" >
+               
+           
+           <!-- #template-category (template for Category View )-->
+                <div class="category-title">
+                
+                   <h2><%=name%></h2>
+                   <%=desc%>
+                
+                </div>
+                <div class="category-content">
+                
+                    The menu items goes here
+                    <!-- ItemViewContainer  for Category View  -->
+                    <ul class="menu-items">
+                        <!-- template-menu-item  (tempalte for itemView)  -->
+                            Item <%= name%>
+                            <strong>Price is <%= price%></strong>
+                            <input type="text" value="<%= quantity %>" />
+                            <a href="javascript:void()" class="add">Add</a>
+                         <!-- template-menu-item   -->
+                    </ul>
+                    <!-- ItemViewContainer -->
+                
+                </div>
+            <!-- #template-category -->               
+
+ 
+    </div>
+    <!-- ItemViewContainer -->
+    
+    
+<!-- #template-menu-core -->  
+ 
+<div id="order-summary">Order Summary Goes here</div>
+<div id="categories-content">
+     <ul class="nav nav-tabs" id="categories-tabs">
+          <li><a href="#category-1">Appetizers</a></li>
+     </ul>
+     <div class="tab-content" >
+           <div class="tab-pane" id="category-1">
+            <div class="category-title">...</div>
+            <div class="category-content">..the category items goes here.</div>
+    </div>
+</div>
+
+
+template-skeleton
+
+<div id="order-summary"></div>
+<div id="categories-content"></div>
+
+
+template-menu-core
+
+<ul class="nav nav-tabs" id="categories-tabs"></ul>
+<div class="tab-content" ></div>
+
+
+template-category
+
+<div class="category-title">
+    <h2><%=name%></h2>
+    <%=desc%>
+</div>
+<div class="category-content">
+    The menu items goes here
+    <ul class="menu-items"></ul>
+</div>
+
+template-menu-item
+
+Item <%= name%>
+<strong>Price is <%= price%></strong>
+<input type="text" value="<%= quantity %>" />
+<a href="javascript:void()" class="add">Add</a>

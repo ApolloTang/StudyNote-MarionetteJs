@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>102</title>
+</head>
+
+<body>
+
+	<div id="main-region"></div>
+
+	<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+	<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+	<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+	<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+	<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+
+	<script type="text/javascript">
+		var app = new Marionette.Application();
+		
+		app.module("MyModule", function( MyModule, app, BB, Marionette, $, _, opts) {
+			
+			var _API = {
+				  doSomething: function() { console.log('done something');}	
+				, returnSomething: function(arg) { return JSON.stringify({ stuff: arg });}
+			};
+	        
+		    app.reqres.setHandler('eventDoSomething', function(){ _API.doSomething(); });
+		    app.reqres.setHandler('eventReturnSomething', function(arg){ return _API.returnSomething(arg); });
+
+		} , null );
+		// end MyModule
+		
+		app.module("MyModule", function( MyModule, app, BB, Marionette, $, _, opts) {
+					
+			MyModule.Controller = {
+					doSomething :     function() { 	app.request('eventDoSomething'); }
+				,	returnSomething : function(arg) { console.log( app.request('eventReturnSomething', arg)); 
+				}	
+			}// end MyModule.Controller				
+		} , null ); 
+		// end module
+			
+		// Application Controller (the Event dispacher )
+		app.module("AppControl", function(AppControl, app, BB, Marionette, $, _ ){
+			// this = AppControl
+			this.Router = Marionette.AppRouter.extend({
+				appRoutes: {
+					  "doSomething" : 'appDoSomthing'
+					, 'returnSomething' : 'appReturnSomething'
+				}
+			}); 
+			
+			var _RouterAPI = {
+				  routerDefault      : function()   { console.log('router default');}
+				, appDoSomthing      : function()   { app.MyModule.Controller.doSomething();}
+				, appReturnSomething : function()   { app.MyModule.Controller.returnSomething("somthing");}
+			};
+			
+			app.addInitializer(function(){  /* exec [2] */
+				new AppControl.Router({controller: _RouterAPI	});
+			});
+		
+			app.on("initialize:after", function(){ /* exec [3] */
+				
+				if(Backbone.history){ 
+					Backbone.history.start(); 
+					if(Backbone.history.fragment === ""){ app.trigger('ApplicationControl:default'); }
+				};
+			});
+			
+			// application wide event listener
+			app.on("ApplicationControl:default", function(){ 
+				Backbone.history.navigate("default"); 
+				_RouterAPI.routerDefault();
+			});
+					
+		});
+
+		// Entry point
+		app.start(); /* exec [1] */
+		
+		
+		// ************************************
+		// response is invoke by router with url "#doSomething", "#appReturnSomething"
+
+	</script>
+
+</body>
+</html>

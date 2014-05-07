@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>template</title>
+    <style type="text/css">
+	ul {
+	  list-style: disc;
+	  padding-left: 10px;
+	  margin-left: 10px;    
+	}
+</style>
+</head>
+<body>
+
+<ul id="region1"  style="border:1px blue solid; float:left; width:100% ; height: 10px"></ul>
+<ul id="region2"  style="border:1px red solid; float:left; width:100% ; height: 10px"></ul>
+
+<script id="node-template" type="text/template">
+    <li><%= nodeName %></li>
+</script>
+        
+<div id="tree">
+</div>
+
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>	
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.syphon-0.4.1.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.localStorage-1.1.7.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+<script src="http://localhost:8001/js/lib/spin.js"></script>
+<script src="http://localhost:8001/js/lib/spin.jquery.js"></script>
+
+<script type="text/javascript">	
+
+
+var count = 0
+// The recursive tree view
+var TreeView = Backbone.Marionette.CompositeView.extend({
+    template: "#node-template",
+    
+    tagName: "ul",
+    
+    initialize: function(){
+        count++;
+        // grab the child collection from the parent model
+        // so that we can render the collection as children
+        // of this parent node
+        this.collection = this.model.nodes;
+        //console.log('TreeView initialized, count: ', count);
+        //console.log('this.model.nodes: ', this.model.nodes);
+    },
+    
+    appendHtml: function(collectionView, itemView){
+        // ensure we nest the child list inside of 
+        // the current list item
+        //console.log(itemView.$el.html())
+        //debugger;
+        collectionView.$("li:first").append(itemView.el);
+    }
+});
+
+// The tree's root: a simple collection view that renders 
+// a recursive tree structure for each item in the collection
+var TreeRoot = Backbone.Marionette.CollectionView.extend({
+    itemView: TreeView
+});
+
+
+// ----------------------------------------------------------------
+// Below this line is normal stuff... models, templates, data, etc.
+// ----------------------------------------------------------------
+treeData = [
+  {   nodeName : "0-1"
+    , nodes    : [   {   nodeName : "2-1 d"
+                       , nodes    : [{nodeName: "3-1 a"}, {nodeName : "3-2 b"}, {nodeName: "3-3 c"} ]}
+                   , {   nodeName : "2-2 f"
+                       , nodes    : [{    nodeName : "3-1 e"}
+                                      , { nodeName : "3-2 i"
+                                      ,   nodes    : [ {nodeName: "4-1 f" }, { nodeName: "4-2 g" }, { nodeName: "4-3 h" } ]} 
+                                      , { nodeName : "3-3 j" } ]} ]}
+ ,{   nodeName : "0-2"
+    , nodes    : [  {     nodeName: "2-1"
+                      ,   nodes: [{ nodeName: "3-1" }, { nodeName: "3-2" }, { nodeName: "3-3" } ]}
+                      , { nodeName: "2-2"
+                      ,   nodes: [{ nodeName: "3-1" }, { nodeName: "3-2" },{ nodeName: "3-3" }  ]} ]}
+];
+    
+
+TreeNode = Backbone.Model.extend({
+    initialize: function(){
+        var nodes = this.get("nodes");
+        if (nodes){
+            this.nodes = new TreeNodeCollection(nodes);
+            this.unset("nodes");
+        }
+    }        
+});
+
+TreeNodeCollection = Backbone.Collection.extend({
+    model: TreeNode
+});
+
+var tree = new TreeNodeCollection(treeData);
+var treeView = new TreeRoot({
+    collection: tree
+});
+
+treeView.render();
+$("#tree").html(treeView.el);
+
+
+/*
+tree.models[0].nodes.models[0].nodes.models[0].toJSON();
+tree.models[0].nodes.models[0].nodes.models[0].get('nodeName')
+tree.models[0].nodes.models[0].nodes.models[0].set('nodeName','alsdfjlkdf')
+treeView.render();
+*/
+
+
+/*
+delete tree.models[1].nodes
+treeView.render();
+*/
+
+/*
+temp = tree.models[1].nodes;
+delete tree.models[1].nodes;
+treeView.render();
+tree.models[1].nodes = temp;
+treeView.render();
+*/
+
+/*
+treeView.close();
+treeData = [
+  {   nodeName : "0-1"
+    , nodes    : [   {   nodeName : "2-1 d"
+                       , nodes    : [{nodeName: "3-1 a"}, {nodeName : "3-2 b"}, {nodeName: "3-3 c"} ]}
+                   , {   nodeName : "2-2 f"
+                       , nodes    : [{    nodeName : "3-1 e"}
+                                      , { nodeName : "3-2 i"
+                                      ,   nodes    : [ {nodeName: "4-1 f" }, { nodeName: "4-2 g" }, { nodeName: "4-3 h" } ]} 
+                                      , { nodeName : "3-3 j" } ]} ]}];
+var tree = new TreeNodeCollection(treeData);
+var treeView = new TreeRoot({
+    collection: tree
+});
+treeView.render();
+$("#tree").html(treeView.el);
+*/
+
+/*
+tree.models[0].nodes.models[0].collection.add({   nodeName : "2-1 d"
+                       , nodes    : [{nodeName: "3-1 a"}, {nodeName : "3-2 b"}, {nodeName: "3-3 c"} ]})
+
+*/
+/*
+tree.models[0].nodes.models[0].nodes.models[0]
+tree.models[0].nodes.models[0].nodes.remove('c7')
+*/	
+
+
+/*
+ tree.models[0] === tree.get('c1')
+tree.models[0].get('nodeName')  === tree.get('c1').get('nodeName')
+*/
+
+/*
+
+ */
+	
+</script>
+
+	</body>
+</html>

@@ -1,0 +1,6 @@
+To Read
+
+http://www.slideshare.net/phanleson/soa-in-practice-chapter10me-ps
+http://www.codeproject.com/Articles/566543/WCF-Message-Exchange-Patterns-MEPs
+http://msdn.microsoft.com/en-us/library/aa480061.aspx
+http://msdn.microsoft.com/en-us/library/aa480027.aspx

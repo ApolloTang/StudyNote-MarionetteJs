@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+<div id="main-region"></div>
+	
+<script type="text/template" id="template-item">
+<% 
+ 
+%>
+</script>
+
+<script type="text/template" id="template-items">
+<% 
+console.log('hello');
+debugger; 
+%>
+</script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+      var app = new Marionette.Application();
+      app.addRegions({r1: "#main-region"});
+      
+	  var models_attr = [ /* { a:'0a', b:'0b', ... },
+			                 { a:'1a', b:'1b', ... },						
+                             ....
+	                     */ ];
+	  for ( var i=0; i<10; i++ ) {
+	  	model_attr = {/* { a:i+'a', b:i+'b', ... } */};
+	  	_.each(['a', 'b', 'c', 'd'], function(elem){ model_attr[elem] = i.toString() + elem; } );
+	  	models_attr.push( model_attr );
+	  }
+	  
+      
+      app.Items = Backbone.Collection.extend();
+      app.ViewItem  = Marionette.ItemView.extend({
+      		tagName: "tr", 
+      		template: "#template-item"});
+      app.ViewItems = Marionette.CollectionView.extend( {
+      		tagName: "table", 
+      		template: "#template-items", 
+      		itemView:app.ViewItem });
+      
+      app.items = new app.Items(models_attr);      
+      app.viewItems = new app.ViewItems({ collection: app.items} );
+
+      app.r1.show(app.viewItems);
+</script>
+
+</body>
+</html>
