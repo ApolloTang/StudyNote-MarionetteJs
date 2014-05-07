@@ -43,7 +43,8 @@ app.addRegions({r1: "#region1"});
 
 //var my_template_html = '<div>hello <p>a: <%= a %></p> <p>b: <%= b %></p><% debugger; %></div>' 
 var my_template_html = '<div>hello <%'  
-+ ' console.log("in template string, arguments[0]: ", arguments[0]); ' // <--- data is available here  
++ ' console.log("in template string, arguments[0]: ", arguments[0]); ' // <--- data is available here: arguments[0]:  Object {a: "a", b: "b"}
++ ' console.log("in template string, whatever: ", whatever); ' // <--- data is available here: whatever:  Object {a: "a", b: "b"}
 + ' debugger;'
 + '%></div>' 
 var View = Backbone.Marionette.ItemView.extend({
@@ -60,9 +61,9 @@ var View = Backbone.Marionette.ItemView.extend({
     }
 	,template : function( template_args ) {
 		var what = _.template( 
-		      my_template_html      // [1] tempalte string
-		    , {a:'a', b:'b'}        // [2] data will be avialble in template string  as arguments[0] 
-		    , {variable: 'args'}    // [3] set this, {a:'a', b:'b'} is appended to internal variable 'args'; 
+		      my_template_html       // [1] tempalte string
+		    , {a:'a', b:'b'}         // [2] data will be avialble in template string  as arguments[0] 
+		    , {variable: 'whatever'} // [3] the value, 'whatever', of key, 'variable', is added to the local property in template; 
   			); // end what
   		console.log('typeof _.template() is: ', typeof what)  // string 	    
   		console.log('_.template() return: ', what)  // <div>hello</div>  
