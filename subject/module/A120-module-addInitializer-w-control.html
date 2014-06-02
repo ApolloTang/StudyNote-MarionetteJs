@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+	<div id="main-region"></div>
+<script type="text/template" id="template-item"><p><%= a %> <%= b %> <%= c %> <%= d %></p></script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+(function(){
+	  var outside = 'outside';
+      var app = new Marionette.Application();
+      var myOpt = {a:'a', b:'b'};
+      var myOpt2 = {myOpt2:'myOpt2'};
+
+      var controllerOpt = {n:'start', m:'start2'};
+      
+      app.module("MyModule", function( MyModule_innerName, MyApp, BB, BBM, $, _, Opts ) {
+            MyModule_innerName.foo = 'foo';
+            var _Controller = Backbone.Marionette.Controller.extend({
+                   initialize: function ( options ) {
+                       console.log('_Controller.initialize:this:', this );
+                       console.log('_Controller.initialize:options', options );
+                       var b = { b : "b"}  
+                       this.method_1(b);                        
+                    }
+                    , method_1: function(options){
+                         console.log('_Controller.method_1:this:', this ); 
+                         console.log('_Controller.method_1:options', options );
+                       }
+                    });
+             
+             MyModule_innerName.addInitializer( function (addInitializer_options) {
+                var a = { a : "a"}  
+                this.controller = new _Controller( a );
+             }); // end addIntializer
+                          
+             //debugger;
+        }, myOpt);
+           
+    var start = {start:'start'};
+    app.MyModule.start(c);
+    
+    var c= {c:'c'};   
+    app.MyModule.controller.method_1(c);	 
+
+})();    
+
+
+</script>
+
+</body>
+</html>

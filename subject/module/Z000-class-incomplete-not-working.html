@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+	<div id="main-region"></div>
+<script type="text/template" id="template-item"><p><%= a %> <%= b %> <%= c %> <%= d %></p></script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+(function(){
+	  var outside = 'outside';
+      var app = new Marionette.Application();
+      var myOpt = {a:'a', b:'b'};
+      
+      var myModuleClass = Marionette.Modele.extend ({
+        
+                startWithParent: false             
+              , constructor: function(moduleName, app, options) {
+                  
+                  
+              }
+              , initialize: function(options, moduleName, app) {
+                  
+                  
+              }
+              , onStart: function(options) {
+                  
+                  
+              }
+              , onStop: function(options) { 
+                  
+              }
+      
+      });
+      
+      
+      app.module("MyModule",  { 
+            moduleClass : myModuleClass 
+            , define: function(MyModule_innerName, MyApp, Backbone, Marionette, $, _, Opts ) {
+        
+                     console.log('[1] this === MyModule_innerName: ', (this === MyModule_innerName)); //true
+                     console.log('[2] MyApp===app: ', (MyApp===app));  // true
+                     
+                     // Private
+                     var _data1 = "private data";
+                     var _method1 = function(){ };
+                     
+                     
+                     // Exposed
+                     this.data2 = "public data";
+                     this.method2 = function(){console.log("hello from MyModule")};
+                     this.method3 = function(){console.log("myOpt: ", JSON.stringify(Opts))};
+                     this.method4 = function(){
+                         
+                         debugger;
+                         try {
+                             typeof _data1
+                         } catch(e) {
+                             console.log("no accces to _data1");
+                         }
+                         
+                         try {
+                             typeof this.data2
+                         } catch(e) {
+                             console.log("no accces to this.data2");
+                         }
+                         
+                     };
+                     
+                     console.log('outside: ', outside);
+            }// end define
+      }, myOpt);
+      
+	  app.MyModule.method2();         //hello from MyModule
+	  app.MyModule.method2();            //hello from MyModule
+	  console.log('data2: ', app.MyModule.data2);   //public data
+	  app.MyModule.method3();            // {"a":"a","b":"b"}     
+	  app.MyModule.method4();
+
+})();	 
+
+ debugger;
+</script>
+
+</body>
+</html>

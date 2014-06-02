@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+	<div id="main-region"></div>
+<script type="text/template" id="template-item"><p><%= a %> <%= b %> <%= c %> <%= d %></p></script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+(function(){
+	  var outside = 'outside';
+      var app = new Marionette.Application();
+      var myOpt = {a:'a', b:'b'};
+      var obj_module = {
+          define: function(MyModule_innerName, MyApp, Backbone, Marionette, $, _, Opts ) {
+             console.log(Date.now(), '[2] in define');
+             console.log('define: this === MyModule_innerName: ', (this === MyModule_innerName)); //true
+             console.log('define: MyApp===app: ', (MyApp===app));  // true
+             
+             // Private
+             var _data1 = "private data";
+             var _method1 = function(){ };
+             
+             // Exposed
+             this.data2 = "public data";
+             this.method2 = function(){console.log("hello from MyModule");};
+             this.method3 = function(){console.log("myOpt: ", JSON.stringify(Opts));};
+             
+             console.log('outside define: ', outside);
+           } // end object.define
+           , initialize: function( options, moduleName, app) { 
+             console.log(Date.now(), '[1] in initialize');                                
+             console.log(arguments);
+             //debugger;
+             this.data_on_initializer = 'data_on_initializer';
+             
+             console.log('outside initialize: ', outside);
+          } // end object.initialize
+      }; // end object
+      app.module("MyModule", obj_module, myOpt);
+      
+	  app.MyModule.method2();            //hello from MyModule
+	  console.log('data2: ', app.MyModule.data2);   //public data
+	  app.MyModule.method3();            // {"a":"a","b":"b"}     
+	  
+	  console.log('data_on_initializer: ', app.MyModule.data_on_initializer);   //public data
+	  
+	  
+	  var mySubModule = app.module("MyModule.subModule");
+	  
+	  
+	  
+	  
+ debugger;
+})();	 
+
+
+</script>
+
+</body>
+</html>
