@@ -22,9 +22,6 @@
 	  var outside = 'outside';
       var app = new Marionette.Application();
       var myOpt = {a:'a', b:'b'};
-      var myOpt2 = {myOpt2:'myOpt2'};
-
-      var controllerOpt = {n:'start', m:'start2'};
       
       app.module("MyModule", function( MyModule_innerName, MyApp, BB, BBM, $, _, Opts ) {
             MyModule_innerName.foo = 'foo';
@@ -46,7 +43,7 @@
                 this.controller = new _Controller( a );
              }); // end addIntializer
                           
-             //debugger;
+
         }, myOpt);
            
     var start = {start:'start'};
