@@ -21,35 +21,45 @@
 (function(){
 	  var outside = 'outside';
       var app = new Marionette.Application();
-      var myOpt = {a:'a', b:'b'};
+      var a = 'a';
       
-      app.module("MyModule", function( MyModule_innerName, MyApp, BB, BBM, $, _, Opts ) {
+      app.module("MyModule", function( MyModule_innerName, MyApp, BB, BBM, $, _, opts ) {
             MyModule_innerName.foo = 'foo';
+            
+            console.log('module:this:', this );
+            console.log('module:opts', opts ); 
+            
+            
             var _Controller = Backbone.Marionette.Controller.extend({
                    initialize: function ( options ) {
-                       console.log('_Controller.initialize:this:', this );
-                       console.log('_Controller.initialize:options', options );
-                       var b = { b : "b"}  
-                       this.method_1(b);                        
+                       console.log('_Controller.initialize::: (this === app.MyModule)', (this === app.MyModule));
+     				   console.log('_Controller.initialize::: this ', this );
+                       console.log('_Controller.initialize:options', options ); 
+                       this.b = 'b';
+                       this.method_1(this.b);                        
                     }
                     , method_1: function(options){
+                    	 this.y = 'y';
                          console.log('_Controller.method_1:this:', this ); 
                          console.log('_Controller.method_1:options', options );
                        }
                     });
              
-             MyModule_innerName.addInitializer( function (addInitializer_options) {
-                var a = { a : "a"}  
-                this.controller = new _Controller( a );
+             this.addInitializer( function (options) {
+             	console.log('- - - - - - - - - - -- - - -')
+             	var b = 'b'
+                this.controller = new _Controller( b );
+                console.log('addInitialzier::: (this === app.MyModule) ', (this === app.MyModule) ); 
+                console.log('addInitializer::: options', options );      // start
+
              }); // end addIntializer
                           
 
-        }, myOpt);
+        }, a);
            
-    var start = {start:'start'};
-    app.MyModule.start(c);
-    
-    var c= {c:'c'};   
+    var start = 'start';
+    app.MyModule.start(start);
+    var c = 'c'
     app.MyModule.controller.method_1(c);	 
 
 })();    
