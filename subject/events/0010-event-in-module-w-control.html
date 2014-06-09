@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Marionette lab</title>
+  </head>
+
+  <body>
+
+	<div id="main-region"></div>
+<script type="text/template" id="template-item"><p><%= a %> <%= b %> <%= c %> <%= d %></p></script>
+    
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script> 
+ 
+
+<script type="text/javascript">
+
+	  var outside = 'outside';
+      var app = new Marionette.Application();
+      var a = 'a';
+      
+      app.module("MyModule", function( MyModule_innerName, MyApp, BB, BBM, $, _, opts ) {
+      	
+                 
+		        
+        	    // WRONG !!! 
+	  			var C1 = Backbone.Marionette.Controller.extend({		});
+			    var c1 = new C1();
+			    c1.on('apollo11', function(){alert('apollo11')});
+			    debugger;
+			    c1.trigger('apollo11');
+			   
+			   
+			   	var C2 = Marionette.Controller.extend({		});
+			    var c2 = new C2();
+			    c2.listenTo(c2, 'apollo444', function(){alert('apollo444')});
+			    debugger;
+			    c2.trigger('apollo444');
+
+
+
+				var C3 = Marionette.Controller.extend({
+				  initialize: function(op){ this.stuff = op;  },
+				  doStuff   : function()   {  this.trigger("stuff:done", this.stuff);   }
+				});
+				var c3 = new C3('aaaaa');
+				c3.listenTo(c3, "stuff:done", function(stuff){ console.log(stuff); });
+
+				var C4 = Marionette.Controller.extend({	});
+				var c4 = new C4();
+				c4.listenTo(c3, "stuff:done", function(stuff){ console.log(stuff); });
+				
+				debugger;
+				c3.doStuff();
+				c3.trigger("stuff:done", 'bb');   
+                          
+        }, a);
+           
+   
+
+
+</script>
+
+</body>
+</html>
