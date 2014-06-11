@@ -7,21 +7,26 @@
 </head>
 <body>
 
-<div id="region1"  style="border:1px blue solid; float:left; width:100% ; height: 300px"></div>
-<div id="region2" style="border:1px red solid; float:left; width:100% ; height: 300px"></div>
+<div id="region1"  style="border:1px blue solid; float:left; width:100% ; height: 200px"></div>
+<div id="region2" style="border:1px red solid; float:left; width:100% ; height: 500px"></div>
 
 <script type="text/template" id="template-control-pannel">
+    <p>model 1 color:</p>
     <form action="">
-    <input type="radio" name="model1-color" value="red">red<br>
-    <input type="radio" name="model1-color" value="blue">blue
+    <input type="radio" name="model1-color" value="red"  >red<br>
+    <input type="radio" name="model1-color" value="blue">blue<br>
+    <input type="radio" name="model1-color" value="green" checked>green
     </form>
+    <p>model 2 color:</p>
     <form action="">
-    <input type="radio" name="model2-color"  value="red">red<br>
-    <input type="radio" name="model2-color" value="blue">blue
+    <input type="radio" name="model2-color" value="cyan">cyan<br>
+    <input type="radio" name="model2-color" value="magenta">magenta<br>
+    <input type="radio" name="model2-color" value="yellow" checked>yellow
     </form>
+    <p>view content:</p>
     <form action="">
-    <input type="radio" name="modelView" value="1">model view 1<br>
-    <input type="radio" name="modelView" value="2">model view 2
+    <input type="radio" name="modelView" value="1" checked>show model 1<br>
+    <input type="radio" name="modelView" value="2">show model 2
     </form>
 </script>
 
@@ -46,8 +51,8 @@
 
 
     var M = Backbone.Model.extend({});
-    var m1 = new M({color:'red'});
-    var m2 = new M({color:'blue'});
+    var m1 = new M({color:'green'});
+    var m2 = new M({color:'yellow'});
     
     var C = Backbone.Collection.extend({model: M })
     var c1 = new C([m1, m2]);
