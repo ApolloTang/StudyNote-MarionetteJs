@@ -25,96 +25,97 @@
 <li><ul style="background-color:#eae" id="collections-container"></ul></li>
 </script>
 
-<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
-<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
-<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>	
-<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
-<script src="http://localhost:8001/js/lib/backbone.syphon-0.4.1.js"></script>
-<script src="http://localhost:8001/js/lib/backbone.localStorage-1.1.7.js"></script>
-<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
-<script src="http://localhost:8001/js/lib/spin.js"></script>
-<script src="http://localhost:8001/js/lib/spin.jquery.js"></script>
+<!-- load&#45;script -->
+    <script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+    <script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+    <script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.syphon-0.4.1.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.localStorage-1.1.7.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+    <script src="http://localhost:8001/js/lib/spin.js"></script>
+    <script src="http://localhost:8001/js/lib/spin.jquery.js"></script>
 
-<script type="text/javascript">	
+<script type="text/javascript">
       var app = new Marionette.Application();
-      
+
       app.addRegions({
-      		r1: "#region1",
-      		r2: "#region2"
-      		});
+            r1: "#region1",
+            r2: "#region2"
+            });
       app.Collection       =  Backbone.Collection.extend({});
       app.Collections      =  Backbone.Collection.extend({ model:app.Collection });
-        
-      
+
+
       app.View_item        =  Backbone.Marionette.ItemView.extend(     {template: '#template-item' });
       app.View_collection  =  Backbone.Marionette.CompositeView.extend({
-      	   	template: '#template-collection'
-      	   	, itemViewContainer: "#collection-container"
-      	   	, itemView:app.View_item
-      	   	, onAfterItemAdded: function(itemView){
-      	   		debugger;
-     		   console.log("items was added");
-    		}
-    		, onRender: function(){
-        		console.log("collection render");  
-        		debugger; 
-    		}
-    	});
+            template: '#template-collection'
+            , itemViewContainer: "#collection-container"
+            , itemView:app.View_item
+            , onAfterItemAdded: function(itemView){
+                debugger;
+               console.log("items was added");
+            }
+            , onRender: function(){
+                console.log("collection render");
+                debugger;
+            }
+        });
       app.View_collections =  Backbone.Marionette.CompositeView.extend({
-      	template: '#template-collections'
-      	, initialize: function() { 
-      		debugger;
-      		}
-      	, itemViewContainer: "#collections-container"
-      	, itemView:app.View_collection
-      	, onAfterItemAdded: function(itemView){
-      	   		debugger;
-     		   console.log("collection was added");
-    		}
-    		, onRender: function(){
-        		console.log("collections render");  
-        		debugger; 
-    		}
-      	
-      	});
-      
+        template: '#template-collections'
+        , initialize: function() {
+            debugger;
+            }
+        , itemViewContainer: "#collections-container"
+        , itemView:app.View_collection
+        , onAfterItemAdded: function(itemView){
+                debugger;
+               console.log("collection was added");
+            }
+            , onRender: function(){
+                console.log("collections render");
+                debugger;
+            }
+
+        });
+
 
 
       app.collection       = new app.Collection();
       app.collections      = new app.Collections([app.collection, app.collection]);
-      
+
       //app.collection       = new app.Collection();
       //app.collections      = new app.Collections();
       app.view_collection  = new app.View_collection({collection: app.collection});
       app.view_collections  = new app.View_collections({collection: app.collections});
 
-      
+
       app.r1.show(app.view_collections);
       app.r2.show(app.view_collection);
 
-	  var m1 = { a:'1a', b:'1b' }
-	  var m2 = { a:'2a', b:'2b' }
-      
-	// Other supporting function
-	function generateModelAttr () {
-		var models = [/* { a:'0a', b:'0b', ... },
-		 				 { a:'1a', b:'1b', ... },
-		 					...                    */
-					 ];
-		for (var i = 1; i < 2; i++) {
-			var model = {/* { a:i+'a', b:i+'b', ... } */};
-			model['id'] = i.toString();   // add custom id 
-			_.each(['a', 'b', 'c', 'd'], function(elem) { model[elem] = i.toString() + elem; });
-			models.push(model);
-		}; //end for
-		return models;
-	}
+      var m1 = { a:'1a', b:'1b' }
+      var m2 = { a:'2a', b:'2b' }
 
-	// Entry point
-	app.start(); /* exec [1] */
-	
-	
+    // Other supporting function
+    function generateModelAttr () {
+        var models = [/* { a:'0a', b:'0b', ... },
+                         { a:'1a', b:'1b', ... },
+                            ...                    */
+                     ];
+        for (var i = 1; i < 2; i++) {
+            var model = {/* { a:i+'a', b:i+'b', ... } */};
+            model['id'] = i.toString();   // add custom id
+            _.each(['a', 'b', 'c', 'd'], function(elem) { model[elem] = i.toString() + elem; });
+            models.push(model);
+        }; //end for
+        return models;
+    }
+
+    // Entry point
+    app.start(); /* exec [1] */
+
+
 </script>
 
-	</body>
+    </body>
 </html>
