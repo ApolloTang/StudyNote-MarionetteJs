@@ -44,7 +44,7 @@ var ItemView = Backbone.Marionette.ItemView.extend({
         "change": "update_quantity"
     },
     ui: {
-        "quantity" : "input" 
+        "quantity" : "input"
     },
     events: {
         "click .add": "addtoBasket"
@@ -102,4 +102,3 @@ var CategoryCollectionView = Backbone.Marionette.CompositeView.extend({
         //$(this.el_tabs).append("<li><a href='#category-" + itemView.model.get("id") + "'>"
             //+ itemView.model.get("name") + "</a></li>")
     }
-});
