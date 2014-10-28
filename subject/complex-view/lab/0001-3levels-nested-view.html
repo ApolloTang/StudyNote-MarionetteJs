@@ -45,8 +45,6 @@ var V_L1 = Marionette.ItemView.extend({
 var V_L2 = Marionette.CompositeView.extend({
     initialize: function(options){
       this.collection =  new(Backbone.Collection.extend())(models_attr)
-
-      debugger;
     }
     , template: _.template('<p>V_L2</p><ul style="border:1px red solid; display:inline-block;"></ul>')
     , itemViewContainer: "ul"
@@ -63,12 +61,22 @@ var V_L3 = Marionette.CompositeView.extend({
 //       collection: new(Backbone.Collection.extend())(models_attr)
 // });
 
+
 var v_L3 = new V_L3({
     collection: new (Backbone.Collection.extend())([{x:'x'},{y:'y'}])
 });
 
 // app.r1.show(v_L2);
 app.r2.show(v_L3);
+
+var  m1 = new (Backbone.Collection.extend())([{z:'z'}]);
+debugger;
+v_L3.collection.add(m1)
+
+debugger;
+
+v_L3.collection.remove(v_L3.collection._byId.c2)
+
 
 
 
