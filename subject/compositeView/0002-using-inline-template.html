@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>template</title>
+<style type="text/css">
+* {margin:0;}
+
+</style>
+</head>
+<body>
+
+<div id="region1" style="border:1px blue solid; float:left; width:100% ; height: 300px"></div>
+<div id="region2" style="border:1px red solid; float:left; width:100% ; height: 300px"></div>
+
+
+<script src="http://localhost:8001/js/lib/jquery-1.11.0.js"></script>
+<script src="http://localhost:8001/js/lib/json2-2014-02-04.js"></script>
+<script src="http://localhost:8001/js/lib/underscore-1.4.4.js"></script>
+<script src="http://localhost:8001/js/lib/backbone-1.1.2.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.syphon-0.4.1.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.localStorage-1.1.7.js"></script>
+<script src="http://localhost:8001/js/lib/backbone.marionette-1.7.3.js"></script>
+<script src="http://localhost:8001/js/lib/spin.js"></script>
+<script src="http://localhost:8001/js/lib/spin.jquery.js"></script>
+
+<script type="text/javascript">
+var models_attr = []; /* { a:'0a', b:'0b' },
+                         { a:'1a', b:'1b' } */
+for ( var i=0; i<3; i++ ) {
+    model_attr = {/* { a:i+'a', b:i+'b', ... } */};
+    _.each(['a', 'b'], function(elem){ model_attr[elem] = i.toString() + elem; } );
+        models_attr.push( model_attr );
+}
+
+var app = new Marionette.Application();
+    app.addRegions({r1: "#region1"});
+
+var V_child = Marionette.ItemView.extend({
+      tagName: 'li'
+    , template: _.template('<%= a %> <%= b %>') // compile template
+});
+
+var V_compo = Marionette.CompositeView.extend({
+    template: _.template(
+        '<p><%= i %></p>'
+        + '<p><%= j %></p>'
+        + '<ul style="background: yellow; display:inline-block;"></ul>'
+    )
+    , itemViewContainer: "ul"
+    , itemView: V_child
+});
+
+var v_compo = new V_compo({
+      collection: new(Backbone.Collection.extend())(models_attr)
+    , model: new (Backbone.Model.extend())({i:'i', j:'j'})
+});
+
+app.r1.show(v_compo);
+
+
+
+
+</script>
+
+    </body>
+</html>
