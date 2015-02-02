@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>view to show text</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://localhost:8001/css/lib/normalize-2.1.2.css">
+    <style media="screen" type="text/css">
+
+    /* css here */
+
+    </style>
+</head>
+<body>
+
+    <button js='btn-1'>1</button>
+    <button js='btn-2'>2</button>
+    <div id="r1"></div>
+
+    <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/jquery.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/lodash.compat.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/backbone.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/backbone.marionette.js"></script>
+    <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/handlebars-v2.0.0.js"></script>
+
+    <script>
+    /* global $, _, Backbone, Handlebars */
+    (function(){
+        'use strict';
+
+        // Synopsis:
+            // This demo show how you can swap view in region without losing state
+
+        //@todo
+            //added model to make sure I can still update model through model change event
+
+        var app = new Backbone.Marionette.Application();
+
+        app.addRegions({ r1: '#r1' });
+
+        app.V = Backbone.Marionette.ItemView.extend({
+            initialize: function(){
+                this.preventRender = false;
+            },
+            template: Handlebars.compile('<div><label for={{this}}>{{this}}</labal><input id={{this}} type="text"></div>'),
+            serializeData: function(){
+                var context = this.options.id;
+                return context;
+            },
+            render: function(){
+                if ( !this.preventRender ) {
+                    console.log('Will render')
+                    var result = Marionette.ItemView.prototype.render.apply(this, [].slice.apply(arguments));
+                    this.preventRender = false;
+                    return result;
+                }
+                console.log('Will not render')
+                return;
+            },
+        });
+
+        app.form1 = new app.V({id:1});
+        app.form2 = new app.V({id:2});
+
+        app.form1.render()
+        app.form2.render()
+
+        $('body').find('[js=btn-1]').click(function(){
+            app.form1.preventRender = true;
+            console.log('showing form 1, preventRender: ', app.form1.preventRender);
+            app.r1.show(app.form1, {preventDestroy: true});
+        });
+
+        $('body').find('[js=btn-2]').click(function(){
+            app.form2.preventRender = true;
+            console.log('showing form 2, preventRender: ', app.form1.preventRender);
+            app.r1.show(app.form2, {preventDestroy: true});
+        });
+        window.app = app;
+    })();
+    </script>
+</body>
+</html>
