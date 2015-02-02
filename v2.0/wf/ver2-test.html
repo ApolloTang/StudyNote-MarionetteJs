@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>03.00-collection-w-handlebar-template</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://localhost:8001/css/lib/normalize-2.1.2.css">
+    <style media="screen" type="text/css">
+
+    /* css here */
+
+    </style>
+</head>
+<body>
+
+    <script id="template-item" type="text/x-underscore-template">
+        {{#each data}}
+            <td>{{this}}</td>
+        {{/each}}
+    </script>
+
+    <script id="template-collection" type="text/x-handlebars-template">
+        <thead><tr><th>AA</th><th>BB</th><th>CC</th><th>DD</th></tr></thead>
+        <tbody></tbody>
+    </script>
+
+    <div id="region"></div>
+
+    <script src="../vendors/backbone.marionette/jquery.js"></script>
+    <!-- <script src="../vendors/backbone.marionette/underscore.js"></script> -->
+    <script src="../vendors/lodash.compat.js"></script>
+    <script src="../vendors/backbone.marionette/backbone.js"></script>
+    <script src="../vendors/backbone.marionette/backbone.marionette.js"></script>
+    <script src="../vendors/handlebars-v2.0.0.js"></script>
+
+    <script>
+    /* global $, _, Backbone, Handlebars */
+    (function(){
+        'use strict';
+
+        var app = {};
+
+        app.mock = function(num) {
+            // return an array whose elements are bb.model:
+            //        [   bb.model.extend( {"a":"5a", "b":"5b", "c":"5c", "d":"5d"} )
+            //          , bb.model.extend( {"a":"4a", "b":"4b", "c":"4c", "d":"4d"} ) ... ]
+
+            var   models = []
+                , i      = num      // number of model to create
+                , JSON   = null;    // { "a":"a"+i, "b":"b"+i, ... }
+
+            do {
+                JSON = {};
+                _.each(['a', 'b', 'c', 'd'], function(item){ JSON[item] = i.toString() + item; });
+                var modelInstance =  new ( Backbone.Model.extend() )( JSON );
+                models.push(modelInstance);
+            } while (--i);
+
+            return models;
+        };
+
+        app.templateItem = $('#template-item').html();
+        app.templateCollection = $('#template-collection').html();
+
+        // Define item view
+        var ViewItem = Backbone.Marionette.ItemView.extend({
+                tagName: 'tr'
+              , template: Handlebars.compile( app.templateItem )
+              , serializeData: function(){ return {data:this.model.toJSON()}; }
+        });
+
+        // Define collection View
+        app.ViewCollection = Backbone.Marionette.CompositeView.extend({
+              initialize: function(){}
+            , tagName: 'table'
+            , template: Handlebars.compile( app.templateCollection )
+            , childView: ViewItem
+            , childViewContainer: 'tbody'
+        });
+
+        app.modelsData = app.mock(5);
+        // Instantiate a backbone collection with models data
+        app.collection = new ( Backbone.Collection.extend() )( app.modelsData );
+        // Create collection view instance
+        app.viewCollection = new app.ViewCollection({collection:app.collection});
+        app.table = app.viewCollection.render().$el;
+
+        $('#region').append(app.table);
+
+        window.app = app;
+    })();
+    </script>
+</body>
+</html>
