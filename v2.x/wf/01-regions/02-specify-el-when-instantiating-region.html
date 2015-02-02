@@ -17,8 +17,6 @@
 
 
     <div id="r1"></div>
-    <div id="r2"></div>
-    <div id="r3"></div>
 
     <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/jquery.js"></script>
     <script src="http://localhost:8001/js/lib/backbone.marionette-v2.3.0/lodash.compat.js"></script>
@@ -33,17 +31,9 @@
 
         var app = new Backbone.Marionette.Application();
 
-        var R1 = Marionette.Region.extend({ el: '#r1' });
-        var R2 = Marionette.Region.extend();
+        var R1 = Marionette.Region.extend();
 
-        app.addRegions({
-            r1: R1,
-            r2: {
-                el: '#r2',
-                regionClass: R2
-            },
-            r3: '#r3'
-        });
+        app.r1 = new R1({ el: '#r1' }); // specify el during instantiation
 
         app.V = Backbone.Marionette.ItemView.extend({
             template: Handlebars.compile('<div>{{this}}</div>'),
@@ -54,12 +44,8 @@
         });
 
         app.v1 = new app.V({textToShow: 'view 1'});
-        app.v2 = new app.V({textToShow: 'view 2'});
-        app.v3 = new app.V({textToShow: 'view 3'});
 
         app.r1.show(app.v1);
-        app.r2.show(app.v2);
-        app.r3.show(app.v3);
 
         window.app = app;
     })();
